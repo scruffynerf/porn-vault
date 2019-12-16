@@ -1,10 +1,34 @@
 <template>
   <div
-    @click="close"
+    @click="showImageDetails ? showImageDetails = false : close()"
     v-if="currentImage"
     style="flex-direction: column; z-index: 999; position: fixed; top:0;left:0; width: 100%; height: 100%; background: #000000aa"
     class="d-flex"
   >
+    <v-navigation-drawer
+      v-model="showImageDetails"
+      fixed
+      @click.native.stop
+      :width="$vuetify.breakpoint.xsOnly ? '80vw' : 400"
+      hide-overlay
+      style="z-index: 1001"
+      right
+    >
+      <v-container>
+        <div class="title">{{ currentImage.name }}</div>
+      </v-container>
+    </v-navigation-drawer>
+
+    <v-btn
+      dark
+      large
+      @click.native.stop="showImageDetails = !showImageDetails"
+      style="z-index: 1000; position: absolute; top: 10px; right: 10px"
+      icon
+    >
+      <v-icon>mdi-information</v-icon>
+    </v-btn>
+
     <div style="position: relative; width: 100%; height: 100%;">
       <v-img
         v-touch="{
@@ -37,23 +61,29 @@
       >
         <v-icon color="white">mdi-chevron-right</v-icon>
       </v-btn>
-    </div>
 
-    <div v-if="!showImageDetails" class="text-center py-3">
-      <v-btn @click.stop="showImageDetails = true" text color="white" class="text-none">Show details</v-btn>
-    </div>
-
-    <v-card tile style="align-self: flex-end; width: 100%;" @click.native.stop v-else>
-      <v-toolbar>
-        <v-btn @click="favorite" class="mr-1" icon>
+      <div
+        class="d-flex justify-center"
+        style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%)"
+      >
+        <v-btn x-large dark @click.native.stop="favorite" class="mr-1" icon>
           <v-icon
             :color="currentImage.favorite ? 'red' : undefined"
           >{{ currentImage.favorite ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
         </v-btn>
 
-        <v-btn @click="bookmark" icon>
+        <v-btn x-large dark @click.native.stop="bookmark" icon>
           <v-icon>{{ currentImage.bookmark ? 'mdi-bookmark-check' : 'mdi-bookmark-outline' }}</v-icon>
         </v-btn>
+      </div>
+    </div>
+
+    <div v-if="false" class="text-center py-3">
+      <v-btn @click.stop="showImageDetails = true" text color="white" class="text-none">Show details</v-btn>
+    </div>
+
+    <v-card tile style="align-self: flex-end; width: 100%;" @click.native.stop v-if="false">
+      <v-toolbar>
         <v-spacer></v-spacer>
         <v-btn @click="showImageDetails = false" class="mr-1" icon>
           <v-icon>mdi-chevron-down</v-icon>
@@ -533,7 +563,7 @@ export default class Lightbox extends Vue {
   top: 50%;
   transform: translate(-50%, -50%);
   max-width: calc(100% - 150px);
-  max-height: calc(100% - 20px);
+  max-height: calc(100% - 75px);
 }
 
 .thumb-btn {
