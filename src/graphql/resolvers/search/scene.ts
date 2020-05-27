@@ -16,7 +16,11 @@ export async function getScenes(
       }s`
     );
 
-    const scenes = await Promise.all(result.items.map(Scene.getById));
+    const scenes = await Promise.all(
+      result.items.map((id) => {
+        return Scene.getById(id);
+      })
+    );
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return {

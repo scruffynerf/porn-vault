@@ -5,8 +5,13 @@ import Scene from "./scene";
 import Movie from "./movie";
 import { mapAsync } from "./utility";
 import * as logger from "../logger";
-import { labelledItemCollection, studioCollection } from "../database";
-import LabelledItem from "./labelled_item";
+import { studioCollection } from "../database";
+import LRU from "lru-cache";
+
+export const studioCache = new LRU({
+  max: 500,
+  maxAge: 3600 * 1000,
+});
 
 export default class Studio {
   _id: string;
@@ -40,8 +45,16 @@ export default class Studio {
     }
   }
 
-  static async getById(_id: string) {
-    return studioCollection.get(_id);
+  static async getById(_id: string, useCache = false) {
+    if (useCache) {
+      const item = studioCache.get(_id);
+      if (item) return item as Studio;
+    }
+    const studio = await studioCollection.get(_id);
+    if (useCache) {
+      studioCache.set(_id, studio);
+    }
+    return studio;
   }
 
   static async getAll() {
@@ -84,7 +97,11 @@ export default class Studio {
         (await mapAsync(scenes, Scene.getActors)).flat().map((a) => a._id)
       ),
     ];
-    return (await mapAsync(actorIds, Actor.getById)).filter(Boolean) as Actor[];
+    return (
+      await mapAsync(actorIds, (id) => {
+        return Actor.getById(id);
+      })
+    ).filter(Boolean) as Actor[];
   }
 
   static async setLabels(studio: Studio, labelIds: string[]) {

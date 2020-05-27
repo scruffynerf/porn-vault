@@ -238,9 +238,11 @@ export default {
           );
 
           if (config.APPLY_ACTOR_LABELS === true) {
-            const actors = (await mapAsync(actorIds, Actor.getById)).filter(
-              Boolean
-            ) as Actor[];
+            const actors = (
+              await mapAsync(actorIds, (id) => {
+                return Actor.getById(id);
+              })
+            ).filter(Boolean) as Actor[];
             const labelIds = actors.map((ac) => ac.labels).flat();
 
             logger.log("Applying actor labels to image");

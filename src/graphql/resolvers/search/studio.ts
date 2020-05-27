@@ -16,7 +16,11 @@ export async function getStudios(
       }s`
     );
 
-    const studios = await Promise.all(result.items.map(Studio.getById));
+    const studios = await Promise.all(
+      result.items.map((id) => {
+        return Studio.getById(id);
+      })
+    );
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return {

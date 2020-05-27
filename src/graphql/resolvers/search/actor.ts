@@ -29,7 +29,11 @@ export async function getUnwatchedActors(
       }s`
     );
 
-    const actors = await Promise.all(result.items.map(Actor.getById));
+    const actors = await Promise.all(
+      result.items.map((id) => {
+        return Actor.getById(id);
+      })
+    );
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return actors.filter(Boolean);
@@ -52,7 +56,11 @@ export async function getActors(
       }s`
     );
 
-    const actors = await Promise.all(result.items.map(Actor.getById));
+    const actors = await Promise.all(
+      result.items.map((id) => {
+        return Actor.getById(id);
+      })
+    );
     logger.log(`Search done in ${(Date.now() - timeNow) / 1000}s.`);
 
     return {

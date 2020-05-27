@@ -36,9 +36,7 @@ export default class Label {
 
   static async getForItem(id: string) {
     const references = await LabelledItem.getByItem(id);
-    return (await mapAsync(references, (r) => Label.getById(r.label))).filter(
-      Boolean
-    ) as Label[];
+    return labelCollection.getBulk(references.map((r) => r.label));
   }
 
   static async getById(_id: string) {
