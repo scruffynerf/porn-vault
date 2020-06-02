@@ -2,16 +2,20 @@ import { generateHash } from "../hash";
 import Label from "./label";
 import * as logger from "../logger";
 import { unlinkAsync } from "../fs/async";
-import { mapAsync } from "./utility";
 import Vibrant from "node-vibrant";
 import {
   imageCollection,
   actorCollection,
-  labelledItemCollection,
   actorReferenceCollection,
 } from "../database";
-import LabelledItem from "./labelled_item";
 import ActorReference from "./actor_reference";
+import LRU from "lru-cache";
+import Actor from "./actor";
+
+export const imageCache = new LRU({
+  max: 1000,
+  maxAge: 3600 * 1000,
+});
 
 export class ImageDimensions {
   width: number | null = null;
@@ -111,11 +115,21 @@ export default class Image {
     return imageCollection.getAll();
   }
 
-  static async getActors(image: Image) {
+  static async getActors(image: Image, useCache = false) {
+    const cacheId = (actorIds: string[]) => {
+      return actorIds.join(",");
+    };
     const references = await ActorReference.getByItem(image._id);
-    return (
-      await actorCollection.getBulk(references.map((r) => r.actor))
-    ).filter(Boolean);
+    const actorIds = references.map((r) => r.actor);
+    if (useCache) {
+      const item = imageCache.get(cacheId(actorIds));
+      if (item) return item as Actor[];
+    }
+    const actors = (await actorCollection.getBulk(actorIds)).filter(Boolean);
+    if (useCache && actors.length == 1) {
+      imageCache.set(cacheId(actorIds), actors);
+    }
+    return actors;
   }
 
   static async setActors(image: Image, actorIds: string[]) {

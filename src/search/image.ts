@@ -1,6 +1,5 @@
 import Image from "../types/image";
 import ora from "ora";
-import Axios from "axios";
 import extractQueryOptions from "../query_extractor";
 import * as logger from "../logger";
 import asyncPool from "tiny-async-pool";
@@ -129,7 +128,7 @@ export async function createImageSearchDoc(
   image: Image
 ): Promise<IImageSearchDoc> {
   const labels = await Image.getLabels(image);
-  const actors = await Image.getActors(image);
+  const actors = await Image.getActors(image, true);
 
   return {
     _id: image._id,
